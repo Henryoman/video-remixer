@@ -1,0 +1,41 @@
+{
+  "filters": [
+    {
+      "id": "original",
+      "name": "Original",
+      "description": "No color changes",
+      "parameters": {}
+    },
+    {
+      "id": "black_and_white",
+      "name": "Black & White",
+      "description": "Desaturate to grayscale",
+      "parameters": { "saturation": 0 }
+    },
+    {
+      "id": "color_mix_1",
+      "name": "Cool Tone",
+      "description": "Very subtle cool shift",
+      "parameters": { "colorTemperature": -12, "intensity": 0.05 }
+    },
+    {
+      "id": "color_mix_2",
+      "name": "Warm Tone",
+      "description": "Very subtle warm shift",
+      "parameters": { "colorTemperature": 12, "intensity": 0.05 }
+    }
+  ],
+  "clipLength": { "minFraction": 0.94, "maxFraction": 0.98 },
+  "randomization": {
+    "filterProbabilities": {
+      "original": 0.4,
+      "black_and_white": 0.2,
+      "color_mix_1": 0.2,
+      "color_mix_2": 0.2
+    },
+    "speed": {
+      "probability": 0.4,
+      "options": [0.75, 1.0, 1.25]
+    }
+  }
+} 

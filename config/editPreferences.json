@@ -1,0 +1,14 @@
+{
+  "filters": {
+    "original": false,
+    "black_and_white": false,
+    "color_mix_1": true,
+    "color_mix_2": true
+  },
+  "randomizeSpeed": false,
+  "randomizeClip": true,
+  "clipLength": {
+    "min": 0.94,
+    "max": 0.98
+  }
+}

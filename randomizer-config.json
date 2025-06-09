@@ -1,0 +1,17 @@
+{
+  "startTimestamp": {
+    "minPercentage": 0,
+    "maxPercentage": 0.7
+  },
+  "length": {
+    "minSeconds": 3,
+    "maxPercentage": 0.95
+  },
+  "blackAndWhite": {
+    "probability": 0.3
+  },
+  "speed": {
+    "probability": 0.4,
+    "options": [0.75, 1.0, 1.25]
+  }
+} 

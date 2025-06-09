@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { put } from "@vercel/blob"
+import fs from 'fs/promises'
+import path from 'path'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,18 +11,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No video file provided" }, { status: 400 })
     }
 
-    // Upload to Vercel Blob
-    const blob = await put(`videos/${Date.now()}-${file.name}`, file, {
-      access: "public",
-      multipart: true,
-    })
+    // Save to local uploads directory
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    await fs.mkdir(uploadsDir, { recursive: true });
+    const fileName = `${Date.now()}-${file.name}`;
+    const filePath = path.join(uploadsDir, fileName);
+    await fs.writeFile(filePath, buffer);
 
     // Generate a unique ID for this video
-    const videoId = `video_${Date.now()}`
+    const videoId = `video_${Date.now()}`;
 
     return NextResponse.json({
       success: true,
-      blobUrl: blob.url,
+      filePath,
       videoId,
     })
   } catch (error) {
