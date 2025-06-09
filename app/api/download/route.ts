@@ -16,9 +16,9 @@ export async function GET(req: NextRequest) {
     const jobConfig = JSON.parse(jobRaw);
     const outputFile = jobConfig.outputFile;
     const fileBuffer = await fs.readFile(outputFile);
-    // Optionally delete after download
-    await fs.unlink(outputFile).catch(() => {});
-    await fs.unlink(jobPath).catch(() => {});
+    // Keep files for debugging - don't delete
+    console.log(`Downloaded: ${outputFile}`);
+    console.log(`Config: ${jobPath}`);
     return new Response(fileBuffer, {
       headers: {
         'Content-Type': 'video/mp4',
