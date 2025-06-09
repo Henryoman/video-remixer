@@ -34,8 +34,8 @@
       "color_mix_2": 0.2
     },
     "speed": {
-      "probability": 0.4,
-      "options": [0.75, 1.0, 1.25]
+      "probability": 0,
+      "options": [0.95, 1.0, 1.05]
     }
   }
 } 

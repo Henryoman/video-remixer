@@ -1,37 +1,45 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
-const CONFIG_PATH = path.join(process.cwd(), 'config', 'parameters.json');
+const execAsync = promisify(exec);
+const DEFINE_PARAMETERS_PATH = path.join(process.cwd(), 'config', 'defineParameters.json');
+const EDIT_PREFERENCES_PATH = path.join(process.cwd(), 'config', 'editPreferences.json');
 const GENERATED_DIR = path.join(process.cwd(), 'config', 'generated');
 const OUTPUTS_DIR = path.join(process.cwd(), 'outputs');
 
+async function getVideoDuration(inputFile: string): Promise<number> {
+  const { stdout } = await execAsync(`ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${inputFile}"`);
+  return parseFloat(stdout.trim());
+}
+
 export async function randomizeJob(inputFile: string): Promise<string> {
-  const configRaw = await fs.readFile(CONFIG_PATH, 'utf-8');
-  const config = JSON.parse(configRaw);
+  // Get video duration
+  const videoDuration = await getVideoDuration(inputFile);
 
-  // Pick filter
-  const filters = config.filters;
-  const filterProbs = config.randomization.filterProbabilities;
-  const filterIds = filters.map((f: any) => f.id);
-  const filterWeights = filterIds.map((id: string) => filterProbs[id] || 0);
-  const filterIdx = weightedRandomIndex(filterWeights);
-  const selectedFilter = filters[filterIdx];
+  // Load configurations
+  const defineRaw = await fs.readFile(DEFINE_PARAMETERS_PATH, 'utf-8');
+  const defineConfig = JSON.parse(defineRaw);
+  const prefsRaw = await fs.readFile(EDIT_PREFERENCES_PATH, 'utf-8');
+  const prefs = JSON.parse(prefsRaw);
 
-  // Pick speed
+  // Pick filter from enabled ones
+  const enabledFilters = defineConfig.filters.filter((f: any) => prefs.filters[f.id]);
+  const selectedFilter = enabledFilters[Math.floor(Math.random() * enabledFilters.length)];
+
+  // Pick speed (disabled in prefs)
   let speed = 1.0;
-  if (Math.random() < config.randomization.speed.probability) {
-    const opts = config.randomization.speed.options;
-    speed = opts[Math.floor(Math.random() * opts.length)];
-  }
 
   // Pick clip
-  const minF = config.clipLength.minFraction;
-  const maxF = config.clipLength.maxFraction;
+  const minF = prefs.clipLength.min;
+  const maxF = prefs.clipLength.max;
   const clipFraction = Math.random() * (maxF - minF) + minF;
-  // For now, just use dummy values for start/end (real duration should be injected)
-  const start = 0;
-  const end = clipFraction * 100; // Placeholder for video duration
+  const clipDuration = videoDuration * clipFraction;
+  const maxStartTime = videoDuration - clipDuration;
+  const start = Math.random() * maxStartTime;
+  const end = start + clipDuration;
 
   // Write generated config
   const jobId = randomUUID();

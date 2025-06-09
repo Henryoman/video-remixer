@@ -1,71 +1,32 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { randomizeParameters, DEFAULT_CONFIG } from "@/lib/simple-randomizer"
+import { randomizeJob } from "@/scripts/randomize"
+import { applyEdits } from "@/scripts/applyEdits"
+import path from 'path'
 
 export async function POST(request: NextRequest) {
   try {
-    const { videoId, blobUrl, videoDuration = 30, config } = await request.json()
+    const { videoId } = await request.json()
 
-    if (!videoId || !blobUrl) {
-      return NextResponse.json({ error: "Missing required parameters" }, { status: 400 })
+    if (!videoId) {
+      return NextResponse.json({ error: "Missing videoId" }, { status: 400 })
     }
 
-    // Generate simple parameters with just timestamp and length (and optional extras)
-    const videoConfig = randomizeParameters(videoDuration, config || DEFAULT_CONFIG)
+    // Get the input file path
+    const inputFile = path.join(process.cwd(), 'uploads', `${videoId}.mp4`)
 
-    console.log("Generated video config:", JSON.stringify(videoConfig, null, 2))
+    // Generate randomized job config
+    const jobId = await randomizeJob(inputFile)
 
-    // Send to json2video endpoint
-    const processedVideoUrl = await processVideoWithJson2Video(blobUrl, videoConfig)
+    // Apply the edits to generate output video
+    const outputFile = await applyEdits(jobId)
 
     return NextResponse.json({
       success: true,
-      downloadUrl: processedVideoUrl,
-      config: videoConfig,
+      jobId,
+      downloadUrl: `/api/download?jobId=${jobId}`,
     })
   } catch (error) {
     console.error("Processing error:", error)
     return NextResponse.json({ error: "Failed to process video" }, { status: 500 })
-  }
-}
-
-async function processVideoWithJson2Video(videoUrl: string, config: any) {
-  const json2videoApiKey = process.env.JSON2VIDEO_API_KEY
-  const json2videoEndpoint = process.env.JSON2VIDEO_ENDPOINT_URL
-
-  if (!json2videoApiKey || !json2videoEndpoint) {
-    throw new Error("JSON2VIDEO API configuration missing")
-  }
-
-  try {
-    // For testing purposes, just return the original URL
-    // In production, replace with actual API call
-    console.log("Would send to JSON2VIDEO:", {
-      videoUrl,
-      config,
-    })
-
-    // Simulated API call
-    const response = await fetch(json2videoEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${json2videoApiKey}`,
-      },
-      body: JSON.stringify({
-        videoUrl,
-        config,
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`JSON2Video API error: ${response.status}`)
-    }
-
-    const result = await response.json()
-    return result.processedVideoUrl || videoUrl // Fallback to original URL
-  } catch (error) {
-    console.error("JSON2Video processing error:", error)
-    // For testing, return the original URL
-    return videoUrl
   }
 }

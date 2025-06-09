@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useRef } from "react"
 import { Upload, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
+import Progress from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function VideoUploader() {
@@ -87,7 +87,7 @@ export default function VideoUploader() {
         throw new Error("Failed to upload video")
       }
 
-      const { blobUrl, videoId } = await uploadResponse.json()
+      const { videoId } = await uploadResponse.json()
 
       // Process the video
       setIsUploading(false)
@@ -98,7 +98,7 @@ export default function VideoUploader() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ videoId, blobUrl }),
+        body: JSON.stringify({ videoId }),
       })
 
       if (!processResponse.ok) {
@@ -128,7 +128,7 @@ export default function VideoUploader() {
     <div className="space-y-6">
       {!downloadUrl ? (
         <>
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             {file ? (
               <div className="space-y-4">
                 <video
