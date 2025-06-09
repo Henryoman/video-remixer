@@ -43,7 +43,6 @@ export async function randomizeJob(inputFile: string): Promise<string> {
 
   // Write generated config
   const jobId = randomUUID();
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   await fs.mkdir(OUTPUTS_DIR, { recursive: true });
   const outputFile = path.join(OUTPUTS_DIR, `output-${jobId}.mp4`);
   const jobConfig = {
@@ -52,16 +51,24 @@ export async function randomizeJob(inputFile: string): Promise<string> {
     outputFile,
     filter: selectedFilter,
     clip: { start, end },
-    speed,
-    timestamp,
-    videoDuration,
-    clipDuration
+    speed
   };
+  
+  console.log('=== VIDEO PROCESSING CONFIG GENERATED ===');
+  console.log(`Job ID: ${jobId}`);
+  console.log(`Input File: ${inputFile}`);
+  console.log(`Output File: ${outputFile}`);
+  console.log(`Video Duration: ${videoDuration.toFixed(2)}s`);
+  console.log(`Selected Filter: ${selectedFilter.id} - ${selectedFilter.name}`);
+  console.log(`Clip: ${start.toFixed(2)}s - ${end.toFixed(2)}s (${clipDuration.toFixed(2)}s of ${videoDuration.toFixed(2)}s)`);
+  console.log(`Speed: ${speed}x`);
+  console.log(`Full Config:`, JSON.stringify(jobConfig, null, 2));
+  
   await fs.mkdir(GENERATED_DIR, { recursive: true });
-  const configFileName = `${timestamp}_${selectedFilter.id}_${jobId}.json`;
-  await fs.writeFile(path.join(GENERATED_DIR, configFileName), JSON.stringify(jobConfig, null, 2));
-  console.log(`Generated config: ${configFileName}`);
-  console.log(`Filter: ${selectedFilter.id}, Clip: ${start.toFixed(2)}s - ${end.toFixed(2)}s (${clipDuration.toFixed(2)}s of ${videoDuration.toFixed(2)}s)`);
+  const configPath = path.join(GENERATED_DIR, `${jobId}.json`);
+  await fs.writeFile(configPath, JSON.stringify(jobConfig, null, 2));
+  console.log(`Config saved to: ${configPath}`);
+  console.log('=== CONFIG GENERATION COMPLETE ===');
   return jobId;
 }
 

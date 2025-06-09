@@ -1,0 +1,19 @@
+{
+  "jobId": "07d4d2a8-9743-401d-8ef0-b28b175fcee8",
+  "inputFile": "/Users/henryoman/Documents/Cursor/video-remixer/uploads/video_1749498597157.mp4",
+  "outputFile": "/Users/henryoman/Documents/Cursor/video-remixer/outputs/output-07d4d2a8-9743-401d-8ef0-b28b175fcee8.mp4",
+  "filter": {
+    "id": "original",
+    "name": "Original",
+    "description": "No color changes",
+    "parameters": {}
+  },
+  "clip": {
+    "start": 0.05825404941605836,
+    "end": 10.891989875964823
+  },
+  "speed": 1,
+  "timestamp": "2025-06-09T19-49-57-397Z",
+  "videoDuration": 11.497143,
+  "clipDuration": 10.833735826548764
+}
