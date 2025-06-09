@@ -43,6 +43,7 @@ export async function randomizeJob(inputFile: string): Promise<string> {
 
   // Write generated config
   const jobId = randomUUID();
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   await fs.mkdir(OUTPUTS_DIR, { recursive: true });
   const outputFile = path.join(OUTPUTS_DIR, `output-${jobId}.mp4`);
   const jobConfig = {
@@ -51,10 +52,16 @@ export async function randomizeJob(inputFile: string): Promise<string> {
     outputFile,
     filter: selectedFilter,
     clip: { start, end },
-    speed
+    speed,
+    timestamp,
+    videoDuration,
+    clipDuration
   };
   await fs.mkdir(GENERATED_DIR, { recursive: true });
-  await fs.writeFile(path.join(GENERATED_DIR, `${jobId}.json`), JSON.stringify(jobConfig, null, 2));
+  const configFileName = `${timestamp}_${selectedFilter.id}_${jobId}.json`;
+  await fs.writeFile(path.join(GENERATED_DIR, configFileName), JSON.stringify(jobConfig, null, 2));
+  console.log(`Generated config: ${configFileName}`);
+  console.log(`Filter: ${selectedFilter.id}, Clip: ${start.toFixed(2)}s - ${end.toFixed(2)}s (${clipDuration.toFixed(2)}s of ${videoDuration.toFixed(2)}s)`);
   return jobId;
 }
 
