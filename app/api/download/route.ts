@@ -16,9 +16,9 @@ export async function GET(req: NextRequest) {
     const jobConfig = JSON.parse(jobRaw);
     const outputFile = jobConfig.outputFile;
     const fileBuffer = await fs.readFile(outputFile);
-    // Keep files for debugging - don't delete
-    // await fs.unlink(outputFile).catch(() => {});
-    // await fs.unlink(jobPath).catch(() => {});
+    // Clean up video file but keep config for analysis
+    await fs.unlink(outputFile).catch(() => {});
+    // Keep jobPath (config) for historical analysis
     return new Response(fileBuffer, {
       headers: {
         'Content-Type': 'video/mp4',

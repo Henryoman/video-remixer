@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { randomizeJob } from "@/scripts/randomize"
 import { applyEdits } from "@/scripts/applyEdits"
+import fs from 'fs/promises'
 import path from 'path'
 
 export async function POST(request: NextRequest) {
@@ -19,6 +20,9 @@ export async function POST(request: NextRequest) {
 
     // Apply the edits to generate output video
     const outputFile = await applyEdits(jobId)
+
+    // Clean up input file after processing
+    await fs.unlink(inputFile).catch(() => {})
 
     return NextResponse.json({
       success: true,
