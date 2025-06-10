@@ -37,7 +37,7 @@ export async function applyEdits(jobId: string): Promise<{ status: string; jobId
   await log(`Clip: ${clip ? `${clip.start}s - ${clip.end}s` : 'none'}`);
 
   // Build FFmpeg command
-  let ffmpegCmd = `ffmpeg -y -i "${inputFile}"`;
+  let ffmpegCmd = `ffmpeg -threads 1 -y -i "${inputFile}"`;
   await log(`Base command: ${ffmpegCmd}`);
 
   // Clipping (if enabled)
