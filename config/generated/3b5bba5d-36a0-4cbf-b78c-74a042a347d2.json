@@ -1,0 +1,18 @@
+{
+  "jobId": "3b5bba5d-36a0-4cbf-b78c-74a042a347d2",
+  "inputFile": "/Users/henryoman/Documents/Cursor/video-remixer/uploads/video_1749529788264.mp4",
+  "outputFile": "/Users/henryoman/Documents/Cursor/video-remixer/outputs/output-3b5bba5d-36a0-4cbf-b78c-74a042a347d2.mp4",
+  "filter": {
+    "id": "black_and_white",
+    "name": "Black & White",
+    "description": "Desaturate to grayscale",
+    "parameters": {
+      "saturation": 0
+    }
+  },
+  "clip": {
+    "start": 0.2623477033224203,
+    "end": 11.375557915208534
+  },
+  "speed": 1
+}
