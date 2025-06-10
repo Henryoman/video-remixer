@@ -82,7 +82,7 @@ export async function applyEdits(jobId: string): Promise<{ status: string; jobId
   // Run FFmpeg
   await log('=== EXECUTING FFMPEG ===');
   await new Promise<void>((resolve, reject) => {
-    exec(ffmpegCmd, async (error, stdout, stderr) => {
+    exec(ffmpegCmd, { maxBuffer: 1024 * 1024 * 10 }, async (error, stdout, stderr) => {
       if (error) {
         await log(`FFmpeg ERROR: ${error.message}`);
         await log(`FFmpeg STDERR: ${stderr}`);
