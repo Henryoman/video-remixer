@@ -3,6 +3,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { log } from './logger';
 
 const execAsync = promisify(exec);
 const DEFINE_PARAMETERS_PATH = path.join(process.cwd(), 'config', 'defineParameters.json');
@@ -54,21 +55,21 @@ export async function randomizeJob(inputFile: string): Promise<string> {
     speed
   };
   
-  console.log('=== VIDEO PROCESSING CONFIG GENERATED ===');
-  console.log(`Job ID: ${jobId}`);
-  console.log(`Input File: ${inputFile}`);
-  console.log(`Output File: ${outputFile}`);
-  console.log(`Video Duration: ${videoDuration.toFixed(2)}s`);
-  console.log(`Selected Filter: ${selectedFilter.id} - ${selectedFilter.name}`);
-  console.log(`Clip: ${start.toFixed(2)}s - ${end.toFixed(2)}s (${clipDuration.toFixed(2)}s of ${videoDuration.toFixed(2)}s)`);
-  console.log(`Speed: ${speed}x`);
-  console.log(`Full Config:`, JSON.stringify(jobConfig, null, 2));
+  await log('=== VIDEO PROCESSING CONFIG GENERATED ===');
+  await log(`Job ID: ${jobId}`);
+  await log(`Input File: ${inputFile}`);
+  await log(`Output File: ${outputFile}`);
+  await log(`Video Duration: ${videoDuration.toFixed(2)}s`);
+  await log(`Selected Filter: ${selectedFilter.id} - ${selectedFilter.name}`);
+  await log(`Clip: ${start.toFixed(2)}s - ${end.toFixed(2)}s (${clipDuration.toFixed(2)}s of ${videoDuration.toFixed(2)}s)`);
+  await log(`Speed: ${speed}x`);
+  await log(`Full Config: ${JSON.stringify(jobConfig, null, 2)}`);
   
   await fs.mkdir(GENERATED_DIR, { recursive: true });
   const configPath = path.join(GENERATED_DIR, `${jobId}.json`);
   await fs.writeFile(configPath, JSON.stringify(jobConfig, null, 2));
-  console.log(`Config saved to: ${configPath}`);
-  console.log('=== CONFIG GENERATION COMPLETE ===');
+  await log(`Config saved to: ${configPath}`);
+  await log('=== CONFIG GENERATION COMPLETE ===');
   return jobId;
 }
 

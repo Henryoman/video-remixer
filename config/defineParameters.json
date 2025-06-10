@@ -28,10 +28,10 @@
   "clipLength": { "minFraction": 0.94, "maxFraction": 0.98 },
   "randomization": {
     "filterProbabilities": {
-      "original": 0.4,
-      "black_and_white": 0.2,
-      "color_mix_1": 0.2,
-      "color_mix_2": 0.2
+      "original": 0.0,
+      "black_and_white": 0.4,
+      "color_mix_1": 0.3,
+      "color_mix_2": 0.3
     },
     "speed": {
       "probability": 0,

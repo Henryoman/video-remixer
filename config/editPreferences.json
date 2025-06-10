@@ -1,6 +1,6 @@
 {
   "filters": {
-    "original": true,
+    "original": false,
     "black_and_white": true,
     "color_mix_1": true,
     "color_mix_2": true
