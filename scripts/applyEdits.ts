@@ -36,32 +36,66 @@ export async function applyEdits(jobId: string): Promise<{ status: string; jobId
   await log(`Filter: ${filter ? filter.id : 'none'}`);
   await log(`Clip: ${clip ? `${clip.start}s - ${clip.end}s` : 'none'}`);
 
-  // Build FFmpeg args array
-  const args = [
+  // Build FFmpeg command
+  const ffmpegArgs = [
     '-threads', '1',
-    '-filter_threads', '1',
-    '-max_alloc', '200M',
-  ];
-  if (prefs.randomizeClip && clip && typeof clip.start === 'number' && typeof clip.end === 'number') {
-    args.push('-ss', clip.start.toString(), '-to', clip.end.toString());
-  }
-  args.push(
+    '-filter_threads', '1', 
     '-y',
-    '-i', inputFile,
-    '-vf', 'scale=320:568',
-    '-c:v', 'libx264',
-    '-preset', 'veryslow',
-    '-crf', '30',
-    '-c:a', 'copy',
-    outputFile
-  );
-  await log('=== FINAL FFMPEG ARGS ===');
-  await log(JSON.stringify(args));
+    '-i', inputFile
+  ];
+  await log(`Base command: ffmpeg ${ffmpegArgs.join(' ')}`);
+
+  // Clipping (if enabled)
+  if (prefs.randomizeClip && clip && typeof clip.start === 'number' && typeof clip.end === 'number') {
+    ffmpegArgs.push('-ss', clip.start.toString(), '-to', clip.end.toString());
+    await log(`Added clipping: -ss ${clip.start} -to ${clip.end}`);
+  } else {
+    await log(`Clipping SKIPPED: ${JSON.stringify({
+      randomizeClipEnabled: prefs.randomizeClip,
+      clipExists: !!clip,
+      startValid: clip && typeof clip.start === 'number',
+      endValid: clip && typeof clip.end === 'number'
+    })}`);
+  }
+
+  // Color Mix (if enabled)
+  if (filter && prefs.filters[filter.id]) {
+    await log(`Filter ${filter.id} is enabled in preferences`);
+    // Find the filter definition for parameters
+    const filterDef = defineConfig.filters.find((f: any) => f.id === filter.id);
+    await log(`Found filter definition: ${JSON.stringify(filterDef)}`);
+    if (filterDef && filterDef.parameters && filter.id.startsWith('color_mix')) {
+      // Use hue filter for a subtle color shift
+      // For a 5% shift, hue=s=1.0:r=0.02 (very subtle rotation)
+      const colorShift = filterDef.parameters.colorTemperature > 0 ? 0.02 : -0.02;
+      const hueFilter = `hue=h=${colorShift}:s=1`;
+      ffmpegArgs.push('-vf', `scale=320:568,${hueFilter}`);
+      await log(`Added color filter: ${hueFilter}`);
+    }
+  } else {
+    ffmpegArgs.push('-vf', 'scale=320:568');
+    await log(`Color filter SKIPPED: ${JSON.stringify({
+      filterExists: !!filter,
+      filterEnabled: filter ? prefs.filters[filter.id] : false,
+      availableFilters: Object.keys(prefs.filters)
+    })}`);
+  }
+
+  ffmpegArgs.push('-crf', '30', '-preset', 'medium', '-c:a', 'copy', outputFile);
+  await log('=== FINAL FFMPEG COMMAND ===');
+  await log(`ffmpeg ${ffmpegArgs.join(' ')}`);
 
   // Run FFmpeg
   await log('=== EXECUTING FFMPEG ===');
   await new Promise<void>((resolve, reject) => {
-    const ffmpeg = spawn('ffmpeg', args, { stdio: ['ignore', 'inherit', 'inherit'] });
+    const ffmpeg = spawn('ffmpeg', ffmpegArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
+
+    ffmpeg.stdout.on('data', async (data) => {
+      await log(`FFmpeg STDOUT: ${data}`);
+    });
+    ffmpeg.stderr.on('data', async (data) => {
+      await log(`FFmpeg STDERR: ${data}`);
+    });
     ffmpeg.on('close', async (code) => {
       if (code === 0) {
         await log('FFmpeg SUCCESS!');
