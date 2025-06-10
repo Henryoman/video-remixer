@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 import { log } from './logger';
 
 const GENERATED_DIR = path.join(process.cwd(), 'config', 'generated');
@@ -82,17 +82,28 @@ export async function applyEdits(jobId: string): Promise<{ status: string; jobId
   // Run FFmpeg
   await log('=== EXECUTING FFMPEG ===');
   await new Promise<void>((resolve, reject) => {
-    exec(ffmpegCmd, { maxBuffer: 1024 * 1024 * 10 }, async (error, stdout, stderr) => {
-      if (error) {
-        await log(`FFmpeg ERROR: ${error.message}`);
-        await log(`FFmpeg STDERR: ${stderr}`);
-        reject(new Error(stderr));
-      } else {
+    // Split the command into args, removing the initial 'ffmpeg'
+    const args = ffmpegCmd.split(' ').slice(1);
+    const ffmpeg = spawn('ffmpeg', args, { shell: true });
+
+    ffmpeg.stdout.on('data', async (data) => {
+      await log(`FFmpeg STDOUT: ${data}`);
+    });
+    ffmpeg.stderr.on('data', async (data) => {
+      await log(`FFmpeg STDERR: ${data}`);
+    });
+    ffmpeg.on('close', async (code) => {
+      if (code === 0) {
         await log('FFmpeg SUCCESS!');
-        await log(`FFmpeg STDOUT: ${stdout}`);
-        await log(`FFmpeg STDERR: ${stderr}`);
         resolve();
+      } else {
+        await log(`FFmpeg exited with code ${code}`);
+        reject(new Error(`FFmpeg exited with code ${code}`));
       }
+    });
+    ffmpeg.on('error', async (err) => {
+      await log(`FFmpeg PROCESS ERROR: ${err.message}`);
+      reject(err);
     });
   });
 
